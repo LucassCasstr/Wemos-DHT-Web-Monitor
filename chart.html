@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temp e Umidade</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <canvas id="myChart" width="800" height="400" style="width: 800px; height: 400px;"></canvas>
+    
+    <script>
+        // Configuração inicial do gráfico
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Temperatura (°C)',
+                    data: [],
+                    backgroundColor: Utils.CHART_COLORS.red,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Umidade (%)',
+                    data: [],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        display: false
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Valor'
+                        }
+                    }]
+                }
+            }
+        });
+
+        // Consumindo e atualizando os dados //
+        function updateChart() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get.php', true); //Consome a API php
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const dados = JSON.parse(xhr.responseText);
+                    updateData(dados);
+                }
+            };
+            xhr.send();
+        }
+
+    // update function
+    function updateData(dados) {
+        const temperaturas = dados.map(entry => parseFloat(entry.temperatura));
+        const umidades = dados.map(entry => parseFloat(entry.umidade));
+        const timestamps = dados.map(entry => new Date(entry.created_at * 1000)); 
+
+        // Atualize apenas se houver mais de 50 pontos
+        if (myChart.data.labels.length >= 50) {
+            // Remover os pontos mais antigos
+            myChart.data.labels.shift();
+            myChart.data.datasets[0].data.shift();
+            myChart.data.datasets[1].data.shift();
+        }
+        
+        // Adicionar novos dados
+        myChart.data.labels.push(timestamps);
+        myChart.data.datasets[0].data.push(temperaturas);
+        myChart.data.datasets[1].data.push(umidades);
+
+        // update
+        myChart.update();
+    }
+        setInterval(updateChart, 20000);
+    </script>
+</body>
+</html>

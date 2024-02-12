@@ -20,7 +20,7 @@
                 datasets: [{
                     label: 'Temperatura (°C)',
                     data: [],
-                    backgroundColor: Utils.CHART_COLORS.red,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 2
                 },
@@ -35,7 +35,9 @@
             options: {
                 scales: {
                     xAxes: [{
-                        display: false
+                        ticks: {
+                            maxTicksLimit: 10 // Limita a quantidade máxima de rótulos no eixo x
+                        }
                     }],
                     yAxes: [{
                         ticks: {
@@ -63,29 +65,29 @@
             xhr.send();
         }
 
-    // update function
-    function updateData(dados) {
-        const temperaturas = dados.map(entry => parseFloat(entry.temperatura));
-        const umidades = dados.map(entry => parseFloat(entry.umidade));
-        const timestamps = dados.map(entry => new Date(entry.created_at * 1000)); 
+        // update function
+        function updateData(dados) {
+            const temperaturas = dados.map(entry => parseFloat(entry.temperatura));
+            const umidades = dados.map(entry => parseFloat(entry.umidade));
+            const timestamps = dados.map(entry => new Date(entry.created_at * 1000)); 
 
-        // Atualize apenas se houver mais de 50 pontos
-        if (myChart.data.labels.length >= 50) {
-            // Remover os pontos mais antigos
-            myChart.data.labels.shift();
-            myChart.data.datasets[0].data.shift();
-            myChart.data.datasets[1].data.shift();
+            // Atualize apenas se houver mais de 50 pontos
+            if (myChart.data.labels.length >= 50) {
+                // Remover os pontos mais antigos
+                myChart.data.labels.shift();
+                myChart.data.datasets[0].data.shift();
+                myChart.data.datasets[1].data.shift();
+            }
+            
+            // Adicionar novos dados
+            myChart.data.labels.push(timestamps);
+            myChart.data.datasets[0].data.push(temperaturas);
+            myChart.data.datasets[1].data.push(umidades);
+
+            // update
+            myChart.update();
         }
-        
-        // Adicionar novos dados
-        myChart.data.labels.push(timestamps);
-        myChart.data.datasets[0].data.push(temperaturas);
-        myChart.data.datasets[1].data.push(umidades);
-
-        // update
-        myChart.update();
-    }
-        setInterval(updateChart, 20000);
+        setInterval(updateChart, 10000);
     </script>
 </body>
 </html>
